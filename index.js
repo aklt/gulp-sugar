@@ -1,3 +1,4 @@
+/*global console*/
 
 function clone(dest) {
     var r = {};
@@ -12,8 +13,23 @@ function clone(dest) {
 module.exports = function (gulp, conf) {
     var projectDir = module.parent.filename.replace(/^(.+)\/[^\/\\]+$/, '$1');
 
+    var tasksDir = [ ];
+
+    // ./gulp/<script>.js
+    tasksDir.push(projectDir + '/' + (conf.taskDir || 'gulp') + '/');
+
+    // ./node_modules/<conf.(name|module|'gulp-sugar-simple')>/lib/<script>.js
+    tasksDir.push(projectDir + '/node_modules/' + (conf.name || conf.module || 'gulp-sugar-simple') + '/lib/');
+
+    // ./lib/<script>.js
+    tasksDir.push(projectDir + '/lib/');
+
+    // <script>.js
+    tasksDir.push('');
+
+    var added = 0;
     for (var taskName in conf) {
-        if (taskName === 'dest' || taskName === 'src')
+        if (taskName === 'dest' || taskName === 'src' || taskName === 'module')
             continue;
         var taskConf = clone(conf[taskName]);
 
@@ -25,22 +41,26 @@ module.exports = function (gulp, conf) {
         if ('string' === typeof deps) deps = [deps];
 
         var taskScript = taskConf.task || taskName,
-            tasks = [
-                projectDir + '/' + (conf.taskDir || 'gulp') + '/' + taskScript,
-                taskScript
-            ],
-            task = null;
+            task = null,
+            taskPath = '';
 
-        for (var i = 0; i < tasks.length; i += 1) {
+        for (var i = 0; i < tasksDir.length; i += 1) {
             try {
-                task = require(tasks[i]);
+                taskPath = tasksDir[i] + taskScript;
+                task = require(taskPath);
             } catch (e) {
             }
             if (task) break;
         }
 
-        if (!task) throw new Error("No such task found: " + taskScript);
+        if (!task) {
+            var loc = new Error("Couldn't find task " + taskScript +
+                ' in \n\t' + tasksDir.join('\n\t'));
+            console.warn('Warning', loc);
+        }
         gulp.task(taskName, deps, task(gulp, taskConf));
+        added += 1; // TODO: Handle added tasks
     }
+
     return gulp;
 };
