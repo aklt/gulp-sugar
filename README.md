@@ -45,6 +45,8 @@ Here is an example `gulpfile.coffee` using `gulp-sugar`:
    )
 ```
 
-For examples of tasks see `gulp-sugar-tasks`.
+For examples of tasks see
+[gulp-sugar-simple](http://github.com/aklt/gulp-sugar-simple).  An example
+gulpfile is in [gulp-sugar-test](https://github.com/aklt/gulp-sugar-test).
 
 `gulp-sugar` can be used with `gulpfile.js` or `gulpfile.coffee`.
