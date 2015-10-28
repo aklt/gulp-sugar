@@ -1,5 +1,7 @@
 /*global console*/
 
+var fs = require('fs');
+
 function clone(dest) {
     var r = {};
     if (Array.isArray(dest))
@@ -13,19 +15,19 @@ function clone(dest) {
 module.exports = function (gulp, conf) {
     var projectDir = module.parent.filename.replace(/^(.+)\/[^\/\\]+$/, '$1');
 
-    var tasksDir = [ ];
+    var taskDirs = [ ];
 
     // ./gulp/<script>.js
-    tasksDir.push(projectDir + '/' + (conf.taskDir || 'gulp') + '/');
+    taskDirs.push(projectDir + '/' + (conf.taskDir || 'gulp') + '/');
 
     // ./node_modules/<conf.(name|module|'gulp-sugar-simple')>/lib/<script>.js
-    tasksDir.push(projectDir + '/node_modules/' + (conf.name || conf.module || 'gulp-sugar-simple') + '/lib/');
+    taskDirs.push(projectDir + '/node_modules/' + (conf.name || conf.module || 'gulp-sugar-simple') + '/lib/');
 
     // ./lib/<script>.js
-    tasksDir.push(projectDir + '/lib/');
+    taskDirs.push(projectDir + '/lib/');
 
     // <script>.js
-    tasksDir.push('');
+    taskDirs.push('');
 
     var added = 0;
     for (var taskName in conf) {
@@ -44,19 +46,23 @@ module.exports = function (gulp, conf) {
             task = null,
             taskPath = '';
 
-        for (var i = 0; i < tasksDir.length; i += 1) {
-            try {
-                taskPath = tasksDir[i] + taskScript;
-                task = require(taskPath);
-            } catch (e) {
+        for (var i = 0; i < taskDirs.length; i += 1) {
+            taskPath = taskDirs[i] + taskScript + '.js';
+            if (fs.existsSync(taskPath)) {
+                try {
+                    task = require(taskPath);
+                } catch (e) {
+                    console.warn('Error loading "' + taskPath + '"\n\t' +
+                                                     e.message);
+                    return 1;
+                }
             }
             if (task) break;
         }
 
-        if (!task) {
-            var loc = new Error("Couldn't find task " + taskScript +
-                ' in \n\t' + tasksDir.join('\n\t'));
-            console.warn('Warning', loc);
+        if ('function' !== typeof task) {
+            throw new Error("Couldn't find task " + taskScript +
+                            ' in \n\t' + taskDirs.join('\n\t'));
         }
         gulp.task(taskName, deps, task(gulp, taskConf));
         added += 1; // TODO: Handle added tasks
