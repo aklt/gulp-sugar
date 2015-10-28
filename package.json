@@ -2,7 +2,7 @@
   "name": "gulp-sugar",
   "description": "Simplify gulpfiles and reusing gulp tasks",
   "keywords": ["gulp", "wrapper", "sugar"],
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": "git://github.com/aklt/gulp-sugar.git",
   "main": "./index.js",
   "author": "Anders Thøgersen",
