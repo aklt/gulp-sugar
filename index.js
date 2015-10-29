@@ -46,18 +46,27 @@ module.exports = function (gulp, conf) {
             task = null,
             taskPath = '';
 
-        for (var i = 0; i < taskDirs.length; i += 1) {
-            taskPath = taskDirs[i] + taskScript + '.js';
-            if (fs.existsSync(taskPath)) {
-                try {
-                    task = require(taskPath);
-                } catch (e) {
-                    console.warn('Error loading "' + taskPath + '"\n\t' +
-                                                     e.message);
-                    return 1;
+        if (taskConf.skip) {
+            task = function () {
+                var skip = taskName;
+                return function () {
+                    console.log('Skipping task', skip);
+                };
+            };
+        } else {
+            for (var i = 0; i < taskDirs.length; i += 1) {
+                taskPath = taskDirs[i] + taskScript + '.js';
+                if (fs.existsSync(taskPath)) {
+                    try {
+                        task = require(taskPath);
+                    } catch (e) {
+                        console.warn('Error loading "' + taskPath + '"\n\t' +
+                                                        e.message);
+                        return 1;
+                    }
                 }
+                if (task) break;
             }
-            if (task) break;
         }
 
         if ('function' !== typeof task) {
