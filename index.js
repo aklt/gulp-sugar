@@ -21,7 +21,9 @@ module.exports = function (gulp, conf) {
     taskDirs.push(projectDir + '/' + (conf.taskDir || 'gulp') + '/');
 
     // ./node_modules/<conf.(name|module|'gulp-sugar-simple')>/lib/<script>.js
-    taskDirs.push(projectDir + '/node_modules/' + (conf.name || conf.module || 'gulp-sugar-simple') + '/lib/');
+    taskDirs.push(projectDir + '/node_modules/' + (conf.name || conf.module ||
+                                              process.env.GULP_SUGAR_TASKS || 
+                                              'gulp-sugar-simple') + '/lib/');
 
     // ./lib/<script>.js
     taskDirs.push(projectDir + '/lib/');
