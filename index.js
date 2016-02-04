@@ -31,18 +31,24 @@ class Sugar {
 
         var taskDirs = [ ];
 
-        // ./gulp/<script>.js
+        // Check a handful of dirs for task definitions
         taskDirs.push(projectDir + '/' + (o.taskDir || 'gulp') + '/');
-
-        // ./node_modules/<o.(name|module|'gulp-sugar-simple')>/lib/<script>.js
-        taskDirs.push(projectDir + '/node_modules/' + (o.name || o.module ||
-                                                  process.env.GULP_SUGAR_TASKS ||
-                                                  'gulp-sugar-simple') + '/lib/');
-
-        // ./lib/<script>.js
+        if (process.env.GULP_SUGAR_TASKS) {
+          var envTasks = process.env.GULP_SUGAR_TASKS;
+          if (envTasks[0] !== '/') {
+            envTasks = projectDir + '/' + envTasks;
+          }
+          if (envTasks[envTasks.length - 1] !== '/') {
+            envTasks = envTasks + '/';
+          }
+          taskDirs.push(envTasks);
+        }
+        if (o.name || o.module) {
+          taskDirs.push(projectDir + '/node_modules/' + (o.name || o.module) + '/');
+        }
+        taskDirs.push(projectDir + '/node_modules/gulp-sugar-simple/lib/');
+        taskDirs.push(projectDir + '/node_modules/gulp-sugar-tasks/lib/');
         taskDirs.push(projectDir + '/lib/');
-
-        // <script>.js
         taskDirs.push('');
 
         var added = 0;
