@@ -2,6 +2,7 @@
 "use strict"
 
 var fs = require('fs')
+var path = require('path')
 
 function clone(dest) {
     if ('string' === typeof dest) {
@@ -29,26 +30,40 @@ class Sugar {
         o = o || {};
         var projectDir = module.parent.filename.replace(/^(.+)\/[^\/\\]+$/, '$1');
 
+        // Find the first dir containing a node_modules dir
+        function findNodeModulesDir(fromDir) {
+          fromDir = fromDir.replace(/\/+$/, '')
+          if (fromDir.length === 0) {
+            return null
+          }
+          if (fs.existsSync(fromDir + '/node_modules')) {
+            return fromDir
+          }
+          return findNodeModulesDir(path.dirname(fromDir))
+        }
+        var rootDir = findNodeModulesDir(projectDir)
+
         var taskDirs = [ ];
 
         // Check a handful of dirs for task definitions
-        taskDirs.push(projectDir + '/' + (o.taskDir || 'gulp') + '/');
+        taskDirs.push(rootDir + '/' + (o.taskDir || 'gulp') + '/');
         if (process.env.GULP_SUGAR_TASKS) {
           var envTasks = process.env.GULP_SUGAR_TASKS;
           if (envTasks[0] !== '/') {
-            envTasks = projectDir + '/' + envTasks;
+            envTasks = rootDir + '/' + envTasks;
           }
           if (envTasks[envTasks.length - 1] !== '/') {
             envTasks = envTasks + '/';
           }
           taskDirs.push(envTasks);
         }
+
         if (o.name || o.module) {
-          taskDirs.push(projectDir + '/node_modules/' + (o.name || o.module) + '/');
+          taskDirs.push(rootDir + '/node_modules/' + (o.name || o.module) + '/');
         }
-        taskDirs.push(projectDir + '/node_modules/gulp-sugar-simple/lib/');
-        taskDirs.push(projectDir + '/node_modules/gulp-sugar-tasks/lib/');
-        taskDirs.push(projectDir + '/lib/');
+        taskDirs.push(rootDir + '/node_modules/gulp-sugar-simple/lib/');
+        taskDirs.push(rootDir + '/node_modules/gulp-sugar-tasks/lib/');
+        taskDirs.push(rootDir + '/lib/');
         taskDirs.push('');
 
         var added = 0;
