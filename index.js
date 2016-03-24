@@ -71,7 +71,6 @@ class Sugar {
         for (var taskName in o) {
             if (taskName === 'dest' || taskName === 'src' || taskName === 'module')
                 continue;
-            taskNames.push(taskName);
             var taskConf = clone(o[taskName]);
 
             // Allow placing .src and .dest on the parent object
@@ -112,7 +111,8 @@ class Sugar {
                 throw new Error("Couldn't find task " + taskScript +
                                 ' in \n\t' + taskDirs.join('\n\t'));
             }
-            this.gulp.task(taskName, deps, task(this.gulp, taskConf));
+            this.gulp.task(taskName, deps.concat(taskNames), task(this.gulp, taskConf));
+            taskNames.unshift(taskName);
             added += 1; // TODO: Handle added tasks
         }
         return module.exports = this.gulp.task(superTask, maybeDeps.concat(taskNames));
