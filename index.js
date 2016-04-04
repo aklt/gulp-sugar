@@ -5,18 +5,6 @@ var fs = require('fs')
 var path = require('path')
 var extend = require('util')._extend
 
-function findNodeModulesDir (fromDir) {
-  // Find the first dir containing a node_modules dir
-  fromDir = fromDir.replace(/\/+$/, '')
-  if (fromDir.length === 0) {
-    return null
-  }
-  if (fs.existsSync(fromDir + '/node_modules')) {
-    return fromDir
-  }
-  return findNodeModulesDir(path.dirname(fromDir))
-}
-
 class Sugar {
   constructor (gulp, o) {
     this.gulp = gulp
@@ -113,6 +101,18 @@ class Sugar {
   skip (superTask, maybeDeps, o) {
     console.log('Skipping', superTask)
   }
+}
+
+function findNodeModulesDir (fromDir) {
+  // Find the first dir containing a node_modules dir
+  fromDir = fromDir.replace(/\/+$/, '')
+  if (fromDir.length === 0) {
+    return null
+  }
+  if (fs.existsSync(fromDir + '/node_modules')) {
+    return fromDir
+  }
+  return findNodeModulesDir(path.dirname(fromDir))
 }
 
 module.exports = function (gulp) {
