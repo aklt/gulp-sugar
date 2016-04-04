@@ -6,7 +6,7 @@
     "wrapper",
     "sugar"
   ],
-  "version": "0.5.0",
+  "version": "0.6.0",
   "repository": "git://github.com/aklt/gulp-sugar.git",
   "main": "./index.js",
   "author": "Anders Thøgersen",
