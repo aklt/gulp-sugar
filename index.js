@@ -3,18 +3,7 @@
 
 var fs = require('fs')
 var path = require('path')
-
-function clone (dest) {
-  if (typeof dest === 'string') {
-    return dest
-  }
-  var r = {}
-  if (Array.isArray(dest)) r = []
-  for (var dk in dest) {
-    r[dk] = dest[dk]
-  }
-  return r
-}
+var extend = require('util')._extend
 
 function findNodeModulesDir (fromDir) {
   // Find the first dir containing a node_modules dir
@@ -73,7 +62,7 @@ class Sugar {
       if (taskName === 'dest' || taskName === 'src' || taskName === 'module') {
         continue
       }
-      var taskConf = clone(o[taskName])
+      var taskConf = extend({}, o[taskName])
 
       // Allow placing .src and .dest on the parent object
       if (!taskConf.src && o.src) taskConf.src = o.src
