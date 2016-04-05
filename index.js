@@ -94,7 +94,7 @@ class Sugar {
       taskNames.unshift(taskName)
       added += 1 // TODO: Handle added tasks
     }
-    this.gulp.task(superTask, maybeDeps.concat(taskNames))
+    this.gulp.task(superTask, taskNames.concat(maybeDeps))
     this.gulp.task('default', [superTask])
     return this
   }
