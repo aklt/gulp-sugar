@@ -12,6 +12,11 @@ class Sugar {
     this.tasksSeen = {}
   }
   task (superTask, tasksOrDeps, o) {
+    if (!o) {
+      o = tasksOrDeps
+      tasksOrDeps = []
+    }
+
     var type = typeof tasksOrDeps
     if (type === 'string' || Array.isArray(tasksOrDeps)) {
       if (type === 'string') tasksOrDeps = tasksOrDeps.split(/\s+/)
@@ -19,14 +24,9 @@ class Sugar {
       this.gulp.task('default', [superTask])
     }
 
-    if (!o) {
-      o = tasksOrDeps
-      tasksOrDeps = []
-    }
-
     if (typeof o === 'object' && o !== null) {
       o = o || {}
-      var projectDir = module.parent.filename.replace(/^(.+)\/[^\/\\]+$/, '$1')
+      var projectDir = module.parent.filename.replace(/^(.+)\/[^/\\]+$/, '$1')
       var rootDir = findNodeModulesDir(projectDir)
       var taskDirs = []
 
@@ -52,7 +52,6 @@ class Sugar {
       taskDirs.push(rootDir + '/lib/')
       taskDirs.push('')
 
-      var added = 0
       var taskNames = []
       for (var taskName in o) {
         if (taskName === 'dest' || taskName === 'src' || taskName === 'module') {
@@ -66,6 +65,9 @@ class Sugar {
         }
         this.tasksSeen[taskName] = superTask
 
+        var taskArgs = o[taskName]
+        if (typeof taskArgs === 'string') taskArgs = taskArgs.split(/\s+/)
+        if (Array.isArray(taskArgs)) o[taskName] = { args: taskArgs }
         var taskConf = extend({}, o[taskName])
 
         // Allow placing .src and .dest on the parent object
@@ -108,9 +110,14 @@ class Sugar {
             "Couldn't find task " + taskScript + ' in \n\t' + taskDirs.join('\n\t'))
         }
 
-        this.gulp.task(taskName, deps.concat(taskNames), task(this.gulp, taskConf))
+        try {
+          this.gulp.task(taskName, deps.concat(taskNames), task(this.gulp, taskConf))
+        } catch (e) {
+          console.error('Error from task ' + taskName, deps, taskConf)
+          console.warn(e.stack)
+          process.exit(1)
+        }
         taskNames.push(taskName)
-        added += 1
       }
       this.gulp.task(superTask, taskNames)
       this.gulp.task('default', [superTask])
